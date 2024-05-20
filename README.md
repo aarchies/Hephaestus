@@ -30,7 +30,6 @@ go get github.com/aarchie/go-lib
 
 ## Usage
 
-Lancet organizes the code into package structure, and you need to import the corresponding package name when use it. For example, if you use string-related functions,import the strutil package like below:
 
 ```go
 import "github.com/aarchie/go-lib"
