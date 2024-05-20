@@ -30,7 +30,6 @@ go get github.com/aarchie/go-lib
 
 ## Usage
 
-Lancet organizes the code into package structure, and you need to import the corresponding package name when use it. For example, if you use string-related functions,import the strutil package like below:
 
 ```go
 import "github.com/aarchie/go-lib"
@@ -64,7 +63,7 @@ func main() {
 - [Concurrency](#user-content-concurrency)
 
 
-<h3 id="algorithm">1. Algorithm package implements some basic algorithm. eg. sort, search. &nbsp; &nbsp; &nbsp; &nbsp;<a href="#index">index</a></h3>
+<h3 id="algorithm">1.Message bus, can support kafka, rabbimq, chan . &nbsp; &nbsp; &nbsp; &nbsp;<a href="#index">index</a></h3>
 
 ```go
 import "github.com/aarchie/go-lib/messagec"
