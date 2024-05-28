@@ -22,7 +22,7 @@ Hephaestus is a Go library that provides a variety of util functions and message
 ## Installation:
 
 ```go
-go get github.com/aarchies/Hephaestus
+go get github.com/aarchies/hephaestus
 ```
 
 ## Example
@@ -32,7 +32,7 @@ go get github.com/aarchies/Hephaestus
 
 ## Documentation
 
-- [messagec](#user-content-algorithm)
+- [Messagec](#user-content-algorithm)
 
 - [Compare](#user-content-compare)
 
@@ -42,7 +42,7 @@ go get github.com/aarchies/Hephaestus
 <h3 id="algorithm">1.Message bus, can support kafka, rabbimq, chan . &nbsp; &nbsp; &nbsp; &nbsp;<a href="#index">index</a></h3>
 
 ```go
-import "github.com/aarchie/Hephaestus/messagec"
+import "github.com/aarchie/hephaestus/messagec/cqrs"
 ```
 
 #### Function list:
