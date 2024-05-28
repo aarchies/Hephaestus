@@ -2,9 +2,9 @@ package consumer
 
 import (
 	"encoding/json"
-	"flow_crafter_CDN/pkg/messagec/cqrs"
-	"flow_crafter_CDN/pkg/messagec/cqrs/message"
 	"github.com/IBM/sarama"
+	"github.com/aarchies/go-lib/messagec/cqrs"
+	"github.com/aarchies/go-lib/messagec/cqrs/message"
 	"github.com/sirupsen/logrus"
 	"reflect"
 )

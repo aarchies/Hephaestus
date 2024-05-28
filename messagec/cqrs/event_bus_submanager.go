@@ -1,7 +1,7 @@
 package cqrs
 
 import (
-	"flow_crafter_CDN/pkg/messagec/cqrs/event"
+	"github.com/aarchies/go-lib/messagec/cqrs/event"
 	"reflect"
 	"sync"
 )

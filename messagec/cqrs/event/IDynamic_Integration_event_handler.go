@@ -2,7 +2,7 @@ package event
 
 import (
 	"context"
-	"flow_crafter_CDN/pkg/messagec/cqrs/message"
+	"github.com/aarchies/go-lib/messagec/cqrs/message"
 )
 
 type IDynamicIntegrationEventHandler interface {

@@ -2,8 +2,9 @@ package cqrs
 
 import (
 	"encoding/json"
-	"flow_crafter_CDN/pkg/messagec/cqrs/event"
-	"flow_crafter_CDN/pkg/messagec/cqrs/message"
+	"github.com/aarchies/go-lib/messagec/cqrs/event"
+	"github.com/aarchies/go-lib/messagec/cqrs/message"
+
 	"reflect"
 )
 

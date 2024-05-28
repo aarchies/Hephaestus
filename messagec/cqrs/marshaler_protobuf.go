@@ -1,9 +1,9 @@
 package cqrs
 
 import (
-	"flow_crafter_CDN/pkg/messagec/cqrs/event"
-	"flow_crafter_CDN/pkg/messagec/cqrs/message"
 	"fmt"
+	"github.com/aarchies/go-lib/messagec/cqrs/event"
+	"github.com/aarchies/go-lib/messagec/cqrs/message"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"reflect"

@@ -2,9 +2,10 @@ package consumer
 
 import (
 	"context"
-	"flow_crafter_CDN/pkg/messagec/cqrs"
-	"flow_crafter_CDN/pkg/messagec/cqrs/event"
-	"flow_crafter_CDN/pkg/messagec/cqrs/message"
+	"github.com/aarchies/go-lib/messagec/cqrs"
+	"github.com/aarchies/go-lib/messagec/cqrs/event"
+	"github.com/aarchies/go-lib/messagec/cqrs/message"
+
 	"github.com/IBM/sarama"
 	"github.com/sirupsen/logrus"
 )

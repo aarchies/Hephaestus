@@ -2,7 +2,8 @@ package cqrs
 
 import (
 	"context"
-	"flow_crafter_CDN/pkg/messagec/cqrs/event"
+	"github.com/aarchies/go-lib/messagec/cqrs/event"
+
 	"time"
 )
 

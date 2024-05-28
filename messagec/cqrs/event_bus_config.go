@@ -1,7 +1,7 @@
 package cqrs
 
 import (
-	"flow_crafter_CDN/pkg/messagec/cqrs/message"
+	"github.com/aarchies/go-lib/messagec/cqrs/message"
 	"github.com/google/uuid"
 	"time"
 )
