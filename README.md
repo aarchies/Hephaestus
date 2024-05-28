@@ -28,7 +28,7 @@ go get github.com/aarchies/hephaestus
 ## Example
 
 * Basic
-    * [eventbus](examples/event_bus/main.go) - **start here!**
+    * [Eventbus](examples/event_bus/main.go) - **start here!**
 
 ## Documentation
 
