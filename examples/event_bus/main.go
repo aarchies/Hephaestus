@@ -2,10 +2,10 @@ package event_bus
 
 import (
 	"context"
-	"github.com/aarchies/go-lib/examples/event_bus/event"
-	"github.com/aarchies/go-lib/logs"
-	"github.com/aarchies/go-lib/messagec/cqrs"
-	"github.com/aarchies/go-lib/messagec/cqrs/contrib/kafka"
+	"github.com/aarchies/hephaestus/examples/event_bus/event"
+	"github.com/aarchies/hephaestus/logs"
+	"github.com/aarchies/hephaestus/messagec/cqrs"
+	"github.com/aarchies/hephaestus/messagec/cqrs/contrib/kafka"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"

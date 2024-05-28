@@ -1,7 +1,7 @@
 package cqrs
 
 import (
-	"github.com/aarchies/go-lib/messagec/cqrs/event"
+	"github.com/aarchies/hephaestus/messagec/cqrs/event"
 	"reflect"
 	"sync"
 )

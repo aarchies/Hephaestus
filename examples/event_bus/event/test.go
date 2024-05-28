@@ -1,8 +1,8 @@
 package event
 
 import (
-	"github.com/aarchies/go-lib/messagec/cqrs/event"
-	"github.com/aarchies/go-lib/messagec/cqrs/message"
+	"github.com/aarchies/hephaestus/messagec/cqrs/event"
+	"github.com/aarchies/hephaestus/messagec/cqrs/message"
 	"github.com/google/uuid"
 )
 

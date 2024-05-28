@@ -1,7 +1,7 @@
 package event
 
 import (
-	"github.com/aarchies/go-lib/messagec/cqrs/message"
+	"github.com/aarchies/hephaestus/messagec/cqrs/message"
 )
 
 type IntegrationEvent interface {

@@ -2,8 +2,7 @@ package cqrs
 
 import (
 	"context"
-	"github.com/aarchies/go-lib/messagec/cqrs/event"
-
+	"github.com/aarchies/hephaestus/messagec/cqrs/event"
 	"time"
 )
 

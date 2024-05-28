@@ -3,8 +3,8 @@ package consumer
 import (
 	"encoding/json"
 	"github.com/IBM/sarama"
-	"github.com/aarchies/go-lib/messagec/cqrs"
-	"github.com/aarchies/go-lib/messagec/cqrs/message"
+	"github.com/aarchies/hephaestus/messagec/cqrs"
+	"github.com/aarchies/hephaestus/messagec/cqrs/message"
 	"github.com/sirupsen/logrus"
 	"reflect"
 )

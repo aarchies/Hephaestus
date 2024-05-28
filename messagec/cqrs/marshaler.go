@@ -1,6 +1,6 @@
 package cqrs
 
-import "github.com/aarchies/go-lib/messagec/cqrs/message"
+import "github.com/aarchies/hephaestus/messagec/cqrs/message"
 
 type Marshaler interface {
 	Marshal(v interface{}) (*message.Message, error)

@@ -1,4 +1,4 @@
-module github.com/aarchies/go-lib
+module github.com/aarchies/hephaestus
 
 go 1.21.4
 

@@ -2,8 +2,8 @@ package cqrs
 
 import (
 	"fmt"
-	"github.com/aarchies/go-lib/messagec/cqrs/event"
-	"github.com/aarchies/go-lib/messagec/cqrs/message"
+	"github.com/aarchies/hephaestus/messagec/cqrs/event"
+	"github.com/aarchies/hephaestus/messagec/cqrs/message"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"reflect"

@@ -1,7 +1,7 @@
 package cqrs
 
 import (
-	"github.com/aarchies/go-lib/messagec/cqrs/message"
+	"github.com/aarchies/hephaestus/messagec/cqrs/message"
 	"github.com/google/uuid"
 	"time"
 )
