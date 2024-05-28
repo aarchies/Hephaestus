@@ -15,7 +15,7 @@ Hephaestus is a Go library that provides a variety of util functions and message
 
 -   👏 **Easy** to understand
 -   🌍 **Universal** - Based on event-driven architecture, messaging, cqrs
--   💅 **Flexible** with middlewares, plugins and Pub/Sub configurations
+-   💅 **Flexible** - with middlewares, plugins and Pub/Sub configurations
 
 ## Getting Started
 
