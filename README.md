@@ -1,6 +1,6 @@
 # Hephaestus
 
-<img align="right" width="200" src="https://tse2-mm.cn.bing.net/th/id/OIP-C.y12YiMisDMGwXOz17eHzWAHaEG?w=290&h=180&c=7&r=0&o=5&pid=1.7">
+<img align="right" width="200" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkx4uHb-9HJqz0yi-buNBfTOvS1cbZZ2YVvQ&usqp=CAU">
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/ThreeDotsLabs/Hephaestus.svg)](https://pkg.go.dev/github.com/ThreeDotsLabs/Hephaestus)[![Go Report Card](https://goreportcard.com/badge/github.com/ThreeDotsLabs/Hephaestus)](https://goreportcard.com/report/github.com/ThreeDotsLabs/Hephaestus)[![codecov](https://codecov.io/gh/ThreeDotsLabs/Hephaestus/branch/master/graph/badge.svg)](https://codecov.io/gh/ThreeDotsLabs/Hephaestus)[![codecov](https://img.shields.io/badge/go-%3E%3Dv1.18-9cf)](https://codecov.io/gh/ThreeDotsLabs/Hephaestus)
 
