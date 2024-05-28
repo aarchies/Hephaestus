@@ -36,15 +36,15 @@ func Connect(hosts []string, username string, password string, dataBase string, 
 		},
 		ConnOpenStrategy: clickhouse.ConnOpenRoundRobin,
 	}
-	sqlDB, err := clickhouse.Open(config)
+	dB, err := clickhouse.Open(config)
 	if err != nil {
 		logrus.Fatalf("连接clickhouse失败! %s", err.Error())
 	}
 
-	if err := sqlDB.Ping(context.Background()); err != nil {
+	if err := dB.Ping(context.Background()); err != nil {
 		logrus.Fatalln(err.Error())
 	}
-	conn = sqlDB
+	conn = dB
 
 	if d, err := gorm.Open(Gc.New(Gc.Config{
 		Conn: clickhouse.OpenDB(config),
@@ -58,14 +58,14 @@ func Connect(hosts []string, username string, password string, dataBase string, 
 	return conn
 }
 
-func GetDB() driver.Conn {
+func Db() driver.Conn {
 	return conn
 }
 
-func GetGormDB() *gorm.DB {
+func GormDB() *gorm.DB {
 	return db
 }
 
-func CurrentDataBase() string {
+func DataBase() string {
 	return currentDataBase
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	logs.AddLogsModule(logrus.DebugLevel)
+	logs.SetLogsModule(logrus.DebugLevel)
 
 	var wg sync.WaitGroup
 	factory := kafka.NewConnectionFactory(kafka.NewConfig([]string{"ip:port", "ip:port", "ip:port"}, "clickId", "", ""))

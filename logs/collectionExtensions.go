@@ -5,9 +5,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// AddLogsModule 添加日志模块
-func AddLogsModule(level logrus.Level) {
-	fmt.Println("enable logrus logging module")
+func SetLogsModule(level logrus.Level) {
+	fmt.Println("enable loggers logging module")
 	customFormatter := new(logrus.TextFormatter)
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
 	customFormatter.ForceColors = true
