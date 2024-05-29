@@ -58,7 +58,7 @@ func Connect(hosts []string, username string, password string, dataBase string, 
 	return conn
 }
 
-func Db() driver.Conn {
+func DB() driver.Conn {
 	return conn
 }
 
