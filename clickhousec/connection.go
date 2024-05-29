@@ -23,7 +23,7 @@ func Connect(hosts []string, username string, password string, dataBase string, 
 	config := &clickhouse.Options{
 		Addr: hosts,
 		Auth: clickhouse.Auth{
-			Database: dataBase,
+			Database: "default",
 			Username: username,
 			Password: password,
 		},
