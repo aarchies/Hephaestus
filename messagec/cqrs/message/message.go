@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type Payload []byte
+type Payload interface{}
 
 type Message struct {
 	// 消息Id

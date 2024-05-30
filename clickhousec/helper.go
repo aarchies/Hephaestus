@@ -5,10 +5,11 @@ import (
 	"fmt"
 )
 
-// AsyncInsert 异步写入
+// AsyncInsert 异步写入 本地表进行循环写入
 func AsyncInsert(table string, data interface{}) error {
 
-	batch, err := DB().PrepareBatch(context.Background(), fmt.Sprintf("INSERT INTO %s.%s SETTINGS async_insert=1, wait_for_async_insert=1", DataBase(), table))
+	cmd := fmt.Sprintf("INSERT INTO %s.%s SETTINGS async_insert=1, wait_for_async_insert=1", DataBase(), table)
+	batch, err := DB().PrepareBatch(context.Background(), cmd)
 	if err != nil {
 		return err
 	}

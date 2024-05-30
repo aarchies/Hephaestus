@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/aarchies/hephaestus/messagec/cqrs"
@@ -42,7 +41,7 @@ func NewEventBus(connection IDefaultKafkaConnection, retry int) cqrs.IEventBus {
 		logrus.Fatalln("creating Producer Error! %s", err.Error())
 	}
 
-	return BusKafka{connection, producer, cqrs.SubscriptionsManager, cqrs.EventBusConfig{
+	return BusKafka{connection: connection, asyncProducer: producer, IEventBusSubscriptionsManager: cqrs.SubscriptionsManager, config: cqrs.EventBusConfig{
 		retry,
 		nil,
 		nil,
@@ -54,7 +53,7 @@ func NewEventBus(connection IDefaultKafkaConnection, retry int) cqrs.IEventBus {
 func (c BusKafka) Subscribe(ctx context.Context, e event.IntegrationEvent, h event.IDynamicIntegrationEventHandler) {
 
 	c.IEventBusSubscriptionsManager.AddSubscription(e)
-	c.SubscribeDynamic(ctx, reflect.TypeOf(e).Name(), h)
+	c.SubscribeDynamic(ctx, reflect.TypeOf(e).Elem().Name(), h)
 }
 
 func (c BusKafka) SubscribeDynamic(ctx context.Context, e string, h event.IDynamicIntegrationEventHandler) {
@@ -65,6 +64,7 @@ func (c BusKafka) SubscribeDynamic(ctx context.Context, e string, h event.IDynam
 		return
 	}
 
+	logrus.Infof("Subscribing to event {%s} with {%s}", e, reflect.TypeOf(h).Elem().Name())
 	go func() {
 		if err := cp.Consume(ctx, []string{e}, consumer.NewDynamicIntegrationConsumerHandler(h, c.config)); err != nil {
 			return
@@ -96,7 +96,7 @@ func (c BusKafka) UnSubscribe(e event.IntegrationEvent) {
 
 func (c BusKafka) UnsubscribeDynamic(e string) {
 	c.IEventBusSubscriptionsManager.DynamicUnSubscription(e)
-
+	logrus.Infof("Unsubscribed to event {%s}", e)
 	//controller, err := c.connection.GetClient().Controller()
 	//if err != nil {
 	//	return
@@ -117,19 +117,14 @@ func (c BusKafka) Publish(e ...event.IntegrationEvent) {
 	for _, i := range e {
 		err := retry.Do(func() error {
 
-			msg, err := c.config.Marshaler.Marshal(i)
+			bytes, err := c.config.Marshaler.Marshal(i)
 			if err != nil {
-				logrus.Errorf("Failed to serialize the Event Model: {%s}", msg.UUID)
+				logrus.Errorf("Failed to serialize the Event Model: {%s}", i.GetId())
 				return err
 			}
 
-			bytes, err := json.Marshal(msg)
-			if err != nil {
-				logrus.Errorf("Failed to serialize the Message Model: {%s}", msg.UUID)
-				return err
-			}
-			c.asyncProducer.Input() <- &sarama.ProducerMessage{Topic: reflect.TypeOf(i).Name(), Value: sarama.ByteEncoder(bytes)}
-			logrus.Debugf("Publishing Event to Kafka: {%s}", msg.UUID)
+			c.asyncProducer.Input() <- &sarama.ProducerMessage{Topic: reflect.TypeOf(i).Elem().Name(), Value: sarama.ByteEncoder(bytes)}
+			logrus.Debugf("Publishing Event to Kafka: {%s}", i.GetId())
 
 		loop:
 			for {

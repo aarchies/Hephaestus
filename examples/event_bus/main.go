@@ -27,7 +27,7 @@ func main() {
 		Marshaler: cqrs.JsonMarshaler{},
 	})
 
-	c.Subscribe(context.Background(), event.NewTestModel(), event.TestHandler{})
+	c.Subscribe(context.Background(), new(event.TestModel), event.TestHandler{})
 
 	go func() {
 		for i := 0; i < 200; i++ {

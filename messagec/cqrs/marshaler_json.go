@@ -10,7 +10,7 @@ import (
 
 type JsonMarshaler struct{}
 
-func (m JsonMarshaler) Marshal(v interface{}) (*message.Message, error) {
+func (m JsonMarshaler) Marshal(v interface{}) ([]byte, error) {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return nil, err
@@ -21,9 +21,10 @@ func (m JsonMarshaler) Marshal(v interface{}) (*message.Message, error) {
 
 	msg.Metadata.Set("name", reflect.TypeOf(v).Name())
 
-	return msg, nil
+	return b, nil
 }
 
 func (JsonMarshaler) Unmarshal(msg *message.Message, v interface{}) (err error) {
-	return json.Unmarshal(msg.Payload, v)
+	//return json.Unmarshal(msg.Payload, v)
+	return nil
 }

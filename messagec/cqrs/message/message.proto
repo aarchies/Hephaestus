@@ -1,0 +1,14 @@
+syntax = "proto3";
+package pb;
+option go_package = "./pb";
+import "google/protobuf/timestamp.proto";
+
+message Message
+{
+  string  uid = 1;
+  map<string, string> mate_data = 2;
+  bytes payload = 3;
+  google.protobuf.Timestamp time = 4;
+}
+
+

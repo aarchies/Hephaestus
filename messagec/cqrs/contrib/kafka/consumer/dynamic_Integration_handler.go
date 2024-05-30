@@ -2,11 +2,9 @@ package consumer
 
 import (
 	"context"
+	"github.com/IBM/sarama"
 	"github.com/aarchies/hephaestus/messagec/cqrs"
 	"github.com/aarchies/hephaestus/messagec/cqrs/event"
-	"github.com/aarchies/hephaestus/messagec/cqrs/message"
-
-	"github.com/IBM/sarama"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,14 +28,14 @@ func (d *DynamicIntegrationConsumerGroupHandler) Cleanup(session sarama.Consumer
 func (d *DynamicIntegrationConsumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for m := range claim.Messages() {
 
-		var msg message.Message
+		var msg event.IntegrationEvent
 
 		if err := d.config.Marshaler.Unmarshal(&msg, m.Value); err != nil {
 			logrus.Errorf("event [%s] messages deserialization error! %s\n", m.Topic, err.Error())
 			return err
 		}
 
-		if err := d.h.Handle(context.Background(), msg); err != nil {
+		if err := d.h.Handle(context.Background(), msg.GetPayload()); err != nil {
 			return err
 		} else {
 			session.MarkOffset(m.Topic, m.Partition, m.Offset+1, "")
