@@ -5,7 +5,6 @@ import (
 	"github.com/aarchies/hephaestus/examples/event_bus/event"
 	"github.com/aarchies/hephaestus/logs"
 	"github.com/aarchies/hephaestus/messagec/cqrs"
-	"github.com/aarchies/hephaestus/messagec/cqrs/contrib/kafka"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -15,9 +14,9 @@ func main() {
 	logs.SetLogsModule(logrus.DebugLevel)
 
 	var wg sync.WaitGroup
-	factory := kafka.NewConnectionFactory(kafka.NewConfig([]string{"ip:port", "ip:port", "ip:port"}, "clickId", "", ""))
+	factory := IEventBus.NewConnectionFactory(IEventBus.NewConfig([]string{"ip:port", "ip:port", "ip:port"}, "clickId", "", ""))
 	//c := kafka.NewEventBus(factory, 3)
-	c := kafka.NewEventBusWithConfig(factory, cqrs.EventBusConfig{
+	c := IEventBus.NewEventBusWithConfig(factory, cqrs.EventBusConfig{
 		Retry:           3,
 		OnPublishBefore: nil,
 		OnPublishAfter:  nil,

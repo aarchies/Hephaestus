@@ -1,11 +1,12 @@
-package kafka
+package kafkax
 
 import (
 	"context"
 	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/aarchies/hephaestus/messagec/cqrs"
-	"github.com/aarchies/hephaestus/messagec/cqrs/contrib/kafka/consumer"
+	"github.com/aarchies/hephaestus/messagec/cqrs/contrib/kafkax/consumer"
+
 	"github.com/aarchies/hephaestus/messagec/cqrs/event"
 	"github.com/avast/retry-go"
 	"github.com/sirupsen/logrus"
@@ -14,59 +15,61 @@ import (
 )
 
 type BusKafka struct {
-	connection    IDefaultKafkaConnection
-	asyncProducer sarama.AsyncProducer
-	*cqrs.IEventBusSubscriptionsManager
-	config cqrs.EventBusConfig
+	connection           IDefaultKafkaConnection
+	asyncProducer        sarama.AsyncProducer
+	subscriptionsManager *cqrs.IEventBusSubscriptionsManager
+	config               cqrs.EventBusConfig
 }
 
-func NewEventBusWithConfig(connection IDefaultKafkaConnection, config cqrs.EventBusConfig) cqrs.IEventBus {
+var c BusKafka
+
+func NewEventBusWithConfig(connection IDefaultKafkaConnection, config cqrs.EventBusConfig) BusKafka {
 	producer, err := sarama.NewAsyncProducerFromClient(connection.GetClient())
 	if err != nil {
 		logrus.Fatalln("creating Producer Error! %s", err.Error())
 	}
 
-	return BusKafka{
-		connection:                    connection,
-		asyncProducer:                 producer,
-		IEventBusSubscriptionsManager: cqrs.SubscriptionsManager,
-		config:                        config,
+	c = BusKafka{
+		connection:           connection,
+		asyncProducer:        producer,
+		subscriptionsManager: cqrs.SubscriptionsManager,
+		config:               config,
 	}
+	return c
 }
 
-func NewEventBus(connection IDefaultKafkaConnection, retry int) cqrs.IEventBus {
+func NewEventBus(connection IDefaultKafkaConnection, retry int) BusKafka {
 
 	producer, err := sarama.NewAsyncProducerFromClient(connection.GetClient())
 	if err != nil {
 		logrus.Fatalln("creating Producer Error! %s", err.Error())
 	}
-
-	return BusKafka{connection: connection, asyncProducer: producer, IEventBusSubscriptionsManager: cqrs.SubscriptionsManager, config: cqrs.EventBusConfig{
+	c = BusKafka{connection: connection, asyncProducer: producer, subscriptionsManager: cqrs.SubscriptionsManager, config: cqrs.EventBusConfig{
 		retry,
 		nil,
 		nil,
 		nil,
-		cqrs.JsonMarshaler{},
+		nil,
 	}}
+	return c
 }
 
-func (c BusKafka) Subscribe(ctx context.Context, e event.IntegrationEvent, h event.IDynamicIntegrationEventHandler) {
+func Subscribe[T event.IntegrationEvent, TH event.IDynamicIntegrationEventHandler]() {
 
-	c.IEventBusSubscriptionsManager.AddSubscription(e)
-	c.SubscribeDynamic(ctx, reflect.TypeOf(e).Elem().Name(), h)
-}
+	e := new(T)
+	h := new(TH)
+	c.subscriptionsManager.AddSubscription(e, h)
+	SubscribeDynamic[TH](reflect.TypeOf(new(T)).Elem().Name())
 
-func (c BusKafka) SubscribeDynamic(ctx context.Context, e string, h event.IDynamicIntegrationEventHandler) {
-
-	c.IEventBusSubscriptionsManager.AddDynamicSubscription(e)
+	c.subscriptionsManager.AddDynamicSubscription(e)
 	cp, err := sarama.NewConsumerGroupFromClient(fmt.Sprintf("event_%s", e), c.connection.GetClient())
 	if err != nil {
 		return
 	}
 
-	logrus.Infof("Subscribing to event {%s} with {%s}", e, reflect.TypeOf(h).Elem().Name())
+	logrus.Infof("Subscribing to event {%s} with {%s}", e, reflect.TypeOf(new(TH)).Elem().Name())
 	go func() {
-		if err := cp.Consume(ctx, []string{e}, consumer.NewDynamicIntegrationConsumerHandler(h, c.config)); err != nil {
+		if err := cp.Consume(context.Background(), []string{e}, consumer.DynamicIntegrationConsumerHandler(h, c.config)); err != nil {
 			return
 		}
 	}()
@@ -76,9 +79,38 @@ func (c BusKafka) SubscribeDynamic(ctx context.Context, e string, h event.IDynam
 	loop:
 		for {
 			select {
-			case <-c.IEventBusSubscriptionsManager.GetHandle(e).UnSubscription:
+			case <-c.subscriptionsManager.GetHandle(e).UnSubscription:
 				logrus.Infof("Unsubscribe events [%s]!\n", e)
-				c.IEventBusSubscriptionsManager.RemoveDynamicSubscription(e)
+				c.subscriptionsManager.RemoveDynamicSubscription(e)
+				break loop
+			}
+		}
+	}()
+}
+
+func SubscribeDynamic[TH event.IDynamicIntegrationEventHandler](e string) {
+
+	c.subscriptionsManager.AddDynamicSubscription(e)
+	cp, err := sarama.NewConsumerGroupFromClient(fmt.Sprintf("event_%s", e), c.connection.GetClient())
+	if err != nil {
+		return
+	}
+
+	logrus.Infof("Subscribing to event {%s} with {%s}", e, reflect.TypeOf(new(TH)).Elem().Name())
+	go func() {
+		if err := cp.Consume(context.Background(), []string{e}, consumer.DynamicIntegrationConsumerHandler(h, c.config)); err != nil {
+			return
+		}
+	}()
+
+	go func() {
+		defer cp.Close()
+	loop:
+		for {
+			select {
+			case <-c.subscriptionsManager.GetHandle(e).UnSubscription:
+				logrus.Infof("Unsubscribe events [%s]!\n", e)
+				c.subscriptionsManager.RemoveDynamicSubscription(e)
 				break loop
 			}
 		}
@@ -95,7 +127,7 @@ func (c BusKafka) UnSubscribe(e event.IntegrationEvent) {
 }
 
 func (c BusKafka) UnsubscribeDynamic(e string) {
-	c.IEventBusSubscriptionsManager.DynamicUnSubscription(e)
+	c.subscriptionsManager.DynamicUnSubscription(e)
 	logrus.Infof("Unsubscribed to event {%s}", e)
 	//controller, err := c.connection.GetClient().Controller()
 	//if err != nil {
@@ -159,6 +191,5 @@ func (c BusKafka) Disposable() error {
 
 	err := c.asyncProducer.Close()
 	c.connection.Close()
-	c.Clear()
 	return err
 }

@@ -10,21 +10,24 @@ import (
 
 type JsonMarshaler struct{}
 
-func (m JsonMarshaler) Marshal(v interface{}) ([]byte, error) {
-	b, err := json.Marshal(v)
+func (m JsonMarshaler) Marshal(e event.IntegrationEvent) ([]byte, error) {
+	b, err := json.Marshal(e)
 	if err != nil {
 		return nil, err
 	}
-	e := v.(event.IntegrationEvent)
 
 	msg := message.NewMessage(e.GetId(), e.Metadata(), b)
+	msg.Metadata.Set("name", reflect.TypeOf(e).Elem().Name())
 
-	msg.Metadata.Set("name", reflect.TypeOf(v).Name())
+	bytes, err := json.Marshal(message.NewMessage(e.GetId(), e.Metadata(), b))
+	if err != nil {
+		return nil, err
+	}
 
-	return b, nil
+	return bytes, nil
 }
 
-func (JsonMarshaler) Unmarshal(msg *message.Message, v interface{}) (err error) {
+func (JsonMarshaler) Unmarshal(e *message.Message, v interface{}) (err error) {
 	//return json.Unmarshal(msg.Payload, v)
 	return nil
 }

@@ -1,6 +1,6 @@
 module github.com/aarchies/hephaestus
 
-go 1.21.4
+go 1.22.3
 
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.24.0

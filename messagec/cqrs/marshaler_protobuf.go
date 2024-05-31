@@ -3,8 +3,8 @@ package cqrs
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/aarchies/hephaestus/messagec/cqrs/event"
 	"github.com/aarchies/hephaestus/messagec/cqrs/message"
-	"github.com/aarchies/hephaestus/messagec/cqrs/message/pb"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"reflect"
@@ -12,28 +12,25 @@ import (
 
 type ProtobufMarshaler struct{}
 
-func (m ProtobufMarshaler) Marshal(v interface{}) ([]byte, error) {
+func (m ProtobufMarshaler) Marshal(e event.IntegrationEvent) ([]byte, error) {
 
-	b, err := proto.Marshal(v.(proto.Message))
+	b, err := proto.Marshal(e.(proto.Message))
 	if err != nil {
-		err := fmt.Sprintf("protobuf序列化消息时发生错误! Event:%s %v", reflect.TypeOf(v).Name(), v)
+		err := fmt.Sprintf("protobuf序列化消息时发生错误! Event:%s %s", err.Error(), reflect.TypeOf(e).Elem().Name())
 		return nil, errors.New(err)
 	}
-
-	return b, nil
+	e.Metadata().Set("name", reflect.TypeOf(e).Elem().Name())
+	bytes, err := json.Marshal(message.NewMessage(e.GetId(), e.Metadata(), b))
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
 }
 
-func (ProtobufMarshaler) Unmarshal(msg *message.Message, v interface{}) (err error) {
-	m := &pb.Message{}
-	if err := proto.Unmarshal(v.([]byte), m); err != nil {
-		return errors.New(fmt.Sprintf("protobuf反序列化消息时发生错误! Event:%s %v", reflect.TypeOf(v).Name(), v))
-	}
-	msg.UUID = m.Uid
-	msg.Metadata = m.MateData
-	msg.Time = m.Time.AsTime()
+func (ProtobufMarshaler) Unmarshal(e *message.Message, v interface{}) (err error) {
 
-	if err := json.Unmarshal(m.Payload, &msg.Payload); err != nil {
-		return err
+	if err := json.Unmarshal(v.([]byte), &e); err != nil {
+		return errors.New(fmt.Sprintf("protobuf反序列化消息时发生错误! Event:%s", err.Error()))
 	}
 
 	return nil

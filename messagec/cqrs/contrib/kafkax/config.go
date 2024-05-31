@@ -1,4 +1,4 @@
-package kafka
+package kafkax
 
 type Config struct {
 	Adders   []string
