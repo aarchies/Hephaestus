@@ -4,16 +4,15 @@ import (
 	"github.com/aarchies/hephaestus/messagec/cqrs/event"
 	"reflect"
 	"slices"
-	"sync"
 )
 
 var SubscriptionsManager *IEventBusSubscriptionsManager
 
 type IEventBusSubscriptionsManager struct {
-	onEventRemoved map[string]chan int
+	OnEventRemoved map[string]chan int
 	handlers       map[string]*SubscriptionInfo
 	eventType      []reflect.Type
-	rwMutex        sync.RWMutex
+	//rwMutex        sync.RWMutex
 }
 
 func init() {
@@ -29,9 +28,9 @@ func (c *IEventBusSubscriptionsManager) Clear() {
 	clear(c.handlers)
 }
 
-func (c *IEventBusSubscriptionsManager) AddDynamicSubscription(eventName string, handler event.IDynamicIntegrationEventHandler) {
-	c.rwMutex.Lock()
-	defer c.rwMutex.Unlock()
+func (c *IEventBusSubscriptionsManager) AddDynamicSubscription(eventName string, handler event.IntegrationEventHandler) {
+	//c.rwMutex.Lock()
+	//defer c.rwMutex.Unlock()
 
 	if c.handlers[eventName] == nil {
 		s := &SubscriptionInfo{}
@@ -41,28 +40,29 @@ func (c *IEventBusSubscriptionsManager) AddDynamicSubscription(eventName string,
 	}
 }
 
-func AddSubscription[T event.IntegrationEvent, TH event.IDynamicIntegrationEventHandler]() {
-	c.rwMutex.Lock()
-	defer c.rwMutex.Unlock()
+func AddSubscription[T event.IntegrationEvent, TH event.IntegrationEventHandler]() {
+	//SubscriptionsManager.rwMutex.Lock()
+	//defer SubscriptionsManager.rwMutex.Unlock()
 
-	eventName := reflect.TypeOf(event).Elem().Name()
+	eventName := reflect.TypeOf(new(T)).Elem().Name()
 
-	if c.handlers[eventName] == nil {
-		s := &SubscriptionInfo{}
-		s.Typed(reflect.TypeOf(handler))
+	if SubscriptionsManager.handlers[eventName] == nil {
 
-		c.handlers[eventName] = s
+		SubscriptionsManager.handlers[eventName] = &SubscriptionInfo{
+			IsDynamic:   false,
+			HandlerType: reflect.TypeOf(new(TH)),
+		}
 	}
 
-	if !slices.Contains(c.eventType, reflect.TypeOf(event)) {
-		c.eventType = append(c.eventType, reflect.TypeOf(event))
+	if !slices.Contains(SubscriptionsManager.eventType, reflect.TypeOf(new(T))) {
+		SubscriptionsManager.eventType = append(SubscriptionsManager.eventType, reflect.TypeOf(new(T)))
 	}
 
 }
 
 func (c *IEventBusSubscriptionsManager) GetHandler(eventName string) *SubscriptionInfo {
-	c.rwMutex.RLock()
-	defer c.rwMutex.RUnlock()
+	//c.rwMutex.RLock()
+	//defer c.rwMutex.RUnlock()
 
 	if len(c.handlers) > 0 && c.handlers[eventName] != nil {
 		return c.handlers[eventName]
@@ -72,8 +72,8 @@ func (c *IEventBusSubscriptionsManager) GetHandler(eventName string) *Subscripti
 }
 
 func (c *IEventBusSubscriptionsManager) GetEventType(eventName string) reflect.Type {
-	c.rwMutex.RLock()
-	defer c.rwMutex.RUnlock()
+	//c.rwMutex.RLock()
+	//defer c.rwMutex.RUnlock()
 
 	for _, r := range c.eventType {
 		if r.Elem().Name() == eventName {
@@ -85,19 +85,19 @@ func (c *IEventBusSubscriptionsManager) GetEventType(eventName string) reflect.T
 }
 
 func (c *IEventBusSubscriptionsManager) RemoveDynamicSubscription(eventName string) {
-	c.rwMutex.Lock()
-	defer c.rwMutex.Unlock()
+	//c.rwMutex.Lock()
+	//defer c.rwMutex.Unlock()
 
-	c.onEventRemoved[eventName] <- 0
+	c.OnEventRemoved[eventName] <- 0
 	delete(c.handlers, eventName)
 }
 
 func (c *IEventBusSubscriptionsManager) RemoveSubscription(event event.IntegrationEvent) {
-	c.rwMutex.Lock()
-	defer c.rwMutex.Unlock()
+	//c.rwMutex.Lock()
+	//defer c.rwMutex.Unlock()
 
 	eventName := reflect.TypeOf(event).Elem().Name()
-	c.onEventRemoved[eventName] <- 0
+	c.OnEventRemoved[eventName] <- 0
 	delete(c.handlers, eventName)
 	for index, i := range c.eventType {
 		if i.Elem().Name() == eventName {

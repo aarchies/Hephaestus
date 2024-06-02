@@ -1,8 +1,6 @@
-package event
+package event_bus
 
 import (
-	"context"
-	"encoding/json"
 	"github.com/aarchies/hephaestus/messagec/cqrs/event"
 	"github.com/aarchies/hephaestus/messagec/cqrs/message"
 	"github.com/sirupsen/logrus"
@@ -10,18 +8,16 @@ import (
 
 type TestHandler struct{}
 
-var _ event.IDynamicIntegrationEventHandler = TestHandler{}
+var _ event.IntegrationEventHandler = TestHandler{}
 
-func (t TestHandler) Handle(ctx context.Context, data message.Message) error {
+func (t TestHandler) Handle(uid string, metadata message.Metadata, data interface{}) error {
 
-	var a TestModel
 	// json
-	json.Unmarshal(data.Payload, &a)
 
 	// protobuf 指定pb模型
 	//proto.Unmarshal(data.Payload, &modelPb.Weblog{})
 
-	logrus.Infof("触发Handle %v\n", data)
+	logrus.Infof("触发Handle方法! eventId:%s metaData:%v data:%v\n", uid, metadata, data.(TestModel))
 
 	return nil
 }

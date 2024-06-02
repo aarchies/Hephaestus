@@ -1,11 +1,10 @@
 package cqrs
 
 import (
-	"github.com/aarchies/hephaestus/messagec/cqrs/event"
 	"github.com/aarchies/hephaestus/messagec/cqrs/message"
 )
 
 type Marshaler interface {
-	Marshal(e event.IntegrationEvent) ([]byte, error)
-	Unmarshal(e *message.Message, v interface{}) (err error)
+	Marshal(v interface{}) ([]byte, string, error)
+	Unmarshal(msg *message.Message, v interface{}) (err error)
 }

@@ -42,7 +42,7 @@ func (d *DefaultKafkaConnection) GetIsConnected() bool {
 
 func (d *DefaultKafkaConnection) TryConnect() bool {
 
-	logrus.Infoln("Starting TopicModel KafKa.....")
+	logrus.Infoln("Starting KafKa is complete!")
 	d.config = sarama.NewConfig()
 	d.config.ClientID = d.c.ClientId
 	d.config.Version = sarama.DefaultVersion

@@ -16,5 +16,4 @@ func (c SubscriptionInfo) Dynamic(h reflect.Type) {
 func (c SubscriptionInfo) Typed(h reflect.Type) {
 	c.IsDynamic = false
 	c.HandlerType = h
-
 }

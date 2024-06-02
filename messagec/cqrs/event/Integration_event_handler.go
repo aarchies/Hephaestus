@@ -1,9 +1,7 @@
 package event
 
-import (
-	"context"
-)
+import "github.com/aarchies/hephaestus/messagec/cqrs/message"
 
-type IntegrationEventHandler[T any] interface {
-	Handle(ctx context.Context, event T) error
+type IntegrationEventHandler interface {
+	Handle(uid string, metadata message.Metadata, data interface{}) error
 }
