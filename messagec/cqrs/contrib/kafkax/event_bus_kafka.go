@@ -22,14 +22,14 @@ type BusKafka struct {
 
 var c BusKafka
 
-func NewEventBus(connection IDefaultKafkaConnection, retry int) BusKafka {
+func NewEventBus(connection IDefaultKafkaConnection) BusKafka {
 
 	producer, err := sarama.NewAsyncProducerFromClient(connection.GetClient())
 	if err != nil {
 		logrus.Fatalln("creating Producer Error! %s", err.Error())
 	}
 	c = BusKafka{connection: connection, asyncProducer: producer, subscriptionsManager: cqrs.SubscriptionsManager, config: cqrs.EventBusConfig{
-		retry,
+		3,
 		nil,
 		nil,
 		nil,
