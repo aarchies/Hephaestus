@@ -3,11 +3,12 @@ package consumer
 import (
 	"encoding/json"
 	"github.com/IBM/sarama"
-	"github.com/aarchies/hephaestus/messagec/cqrs"
-	"github.com/aarchies/hephaestus/messagec/cqrs/message"
+	"github.com/aarchies/hephaestus/cqrs"
+	"github.com/aarchies/hephaestus/cqrs/message"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"reflect"
+	"time"
 )
 
 type IntegrationConsumerGroupHandler struct {
@@ -15,8 +16,8 @@ type IntegrationConsumerGroupHandler struct {
 	config               cqrs.EventBusConfig
 }
 
-func NewIntegrationConsumerHandler(subscriptionsManager *cqrs.IEventBusSubscriptionsManager, config cqrs.EventBusConfig) *IntegrationConsumerGroupHandler {
-	return &IntegrationConsumerGroupHandler{subscriptionsManager, config}
+func NewIntegrationConsumerHandler(subscriptionsManager *cqrs.IEventBusSubscriptionsManager, config cqrs.EventBusConfig) IntegrationConsumerGroupHandler {
+	return IntegrationConsumerGroupHandler{subscriptionsManager, config}
 }
 
 func (d IntegrationConsumerGroupHandler) Setup(session sarama.ConsumerGroupSession) error {
@@ -54,10 +55,23 @@ func (d IntegrationConsumerGroupHandler) ConsumeClaim(session sarama.ConsumerGro
 			return errors.New("The Handle method was not found!")
 		}
 
-		method.Call([]reflect.Value{reflect.ValueOf(msg.UUID), reflect.ValueOf(msg.Metadata), reflect.ValueOf(model.Elem().Elem().Interface())})
-
-		session.MarkOffset(m.Topic, m.Partition, m.Offset+1, "")
-		session.Commit()
+		result := method.Call([]reflect.Value{reflect.ValueOf(msg.UUID), reflect.ValueOf(msg.Metadata), reflect.ValueOf(model.Elem().Elem().Interface())})
+		if err, ok := result[0].Interface().(error); ok {
+			// 如果返回值是 error 类型，则表示方法调用返回了一个错误
+			// 处理错误
+			if err != nil {
+				d.config.OnError(cqrs.OnEventErrorParams{
+					UId:       msg.UUID,
+					EventName: m.Topic,
+					Message:   &msg,
+					Time:      time.Now(),
+					Err:       err,
+				})
+			}
+		} else {
+			session.MarkOffset(m.Topic, m.Partition, m.Offset+1, "")
+			session.Commit()
+		}
 	}
 
 	return nil

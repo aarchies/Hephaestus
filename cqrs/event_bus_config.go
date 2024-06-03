@@ -1,7 +1,7 @@
 package cqrs
 
 import (
-	"github.com/aarchies/hephaestus/messagec/cqrs/message"
+	"github.com/aarchies/hephaestus/cqrs/message"
 	"github.com/google/uuid"
 	"time"
 )
@@ -29,10 +29,10 @@ type OnEventSendParams struct {
 type OnEventSendFn func(params OnEventSendParams) error
 
 type OnEventErrorParams struct {
-	UId       uuid.UUID
+	UId       string
 	EventName string
 	Message   *message.Message
-	time      time.Time
-	err       error
+	Time      time.Time
+	Err       error
 }
 type OnEventErrorFn func(params OnEventErrorParams)

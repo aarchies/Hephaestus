@@ -3,8 +3,8 @@ package cqrs
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/aarchies/hephaestus/messagec/cqrs/event"
-	"github.com/aarchies/hephaestus/messagec/cqrs/message"
+	"github.com/aarchies/hephaestus/cqrs/event"
+	"github.com/aarchies/hephaestus/cqrs/message"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"reflect"

@@ -1,10 +1,10 @@
 package event_bus
 
 import (
+	"github.com/aarchies/hephaestus/cqrs"
+	"github.com/aarchies/hephaestus/cqrs/contrib/kafkax"
 	"github.com/aarchies/hephaestus/examples/event_bus/pb"
 	"github.com/aarchies/hephaestus/logs"
-	"github.com/aarchies/hephaestus/messagec/cqrs"
-	"github.com/aarchies/hephaestus/messagec/cqrs/contrib/kafkax"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"testing"
@@ -28,10 +28,10 @@ func Test(t *testing.T) {
 	})
 
 	kafkax.Subscribe[TestModel, TestHandler]()
-	kafkax.SubscribeDynamic[TestDynamicHandler]("TestModel")
+	time.Sleep(time.Second * 3)
 
 	go func() {
-		for i := 0; i < 20; i++ {
+		for i := 0; i < 10000; i++ {
 
 			// protobuf
 			message := TestModel{&pb.Weblog{
@@ -69,11 +69,12 @@ func Test(t *testing.T) {
 			// json
 			//message := TestModel{"你好!"}
 			kafkax.Publish(message)
+			//time.Sleep(time.Second)
 		}
 	}()
 
-	time.Sleep(time.Second * 7)
-	//caller.UnSubscribe(NewTestModel())
+	time.Sleep(time.Second * 10)
+	kafkax.UnSubscribe[TestModel]()
 
 	wg.Add(1)
 	wg.Wait()

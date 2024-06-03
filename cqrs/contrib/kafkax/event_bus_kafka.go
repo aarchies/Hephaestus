@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/aarchies/hephaestus/messagec/cqrs"
-	"github.com/aarchies/hephaestus/messagec/cqrs/contrib/kafkax/consumer"
-	"github.com/aarchies/hephaestus/messagec/cqrs/event"
+	"github.com/aarchies/hephaestus/cqrs"
+	"github.com/aarchies/hephaestus/cqrs/contrib/kafkax/consumer"
+	"github.com/aarchies/hephaestus/cqrs/event"
 	"github.com/avast/retry-go"
 	"github.com/sirupsen/logrus"
 	"reflect"
@@ -54,73 +54,66 @@ func NewEventBusWithConfig(connection IDefaultKafkaConnection, config cqrs.Event
 
 func Subscribe[T event.IntegrationEvent, TH event.IntegrationEventHandler[T]]() {
 
+	eventName := reflect.TypeOf(new(T)).Elem().Name()
+	logrus.Infof("Subscribing to event {%s} with {%s}!", eventName, reflect.TypeOf(new(TH)).Elem().Name())
 	cqrs.AddSubscription[T, TH]()
 
-	eventName := reflect.TypeOf(new(T)).Elem().Name()
-	handlerName := reflect.TypeOf(new(TH)).Elem().Name()
 	cp, err := sarama.NewConsumerGroupFromClient(fmt.Sprintf("event_%s", eventName), c.connection.GetClient())
 	if err != nil {
 		return
 	}
 
-	logrus.Infof("Subscribing to event {%s} with {%s}", eventName, handlerName)
 	go func() {
 		if err := cp.Consume(context.Background(), []string{eventName}, consumer.NewIntegrationConsumerHandler(c.subscriptionsManager, c.config)); err != nil {
 			return
 		}
 	}()
 
-	//go func() {
-	//	defer cp.Close()
-	//loop:
-	//	for {
-	//		select {
-	//		case <-c.subscriptionsManager.OnEventRemoved[eventName]:
-	//			logrus.Infof("Unsubscribe events [%s]!\n", eventName)
-	//			c.subscriptionsManager.RemoveDynamicSubscription(eventName)
-	//			break loop
-	//		}
-	//	}
-	//}()
+	go func() {
+		select {
+		case <-c.subscriptionsManager.OnEventRemoved[eventName]:
+			logrus.Infof("Unsubscribe to events [%s]!\n", eventName)
+			cp.Close()
+			return
+		}
+	}()
 }
-func SubscribeDynamic[TH event.IDynamicIntegrationEventHandler](e string) {
-	cqrs.AddDynamicSubscription[TH](e)
 
-	handlerName := reflect.TypeOf(new(TH)).Elem().Name()
+func SubscribeDynamic[TH event.IDynamicIntegrationEventHandler](e string) {
+
+	logrus.Infof("Subscribing Dynamic to event {%s} with {%s}", e, reflect.TypeOf(new(TH)).Elem().Name())
+	cqrs.AddDynamicSubscription[TH](e)
 	cp, err := sarama.NewConsumerGroupFromClient(fmt.Sprintf("event_%s", e), c.connection.GetClient())
 	if err != nil {
 		return
 	}
 
-	logrus.Infof("Subscribing to event {%s} with {%s}", e, handlerName)
 	go func() {
+
 		if err := cp.Consume(context.Background(), []string{e}, consumer.NewDynamicIntegrationConsumerHandler(c.subscriptionsManager, c.config)); err != nil {
 			return
 		}
 	}()
 
-	//go func() {
-	//	defer cp.Close()
-	//loop:
-	//	for {
-	//		select {
-	//		case <-c.subscriptionsManager.OnEventRemoved[eventName]:
-	//			logrus.Infof("Unsubscribe events [%s]!\n", eventName)
-	//			c.subscriptionsManager.RemoveDynamicSubscription(eventName)
-	//			break loop
-	//		}
-	//	}
-	//}()
-}
-func SubscribeToDelay[T event.IntegrationEvent, TH event.IntegrationEventHandler[T]]() {
-	//TODO implement me
-	panic("implement me")
+	go func() {
+		for {
+			select {
+			case <-c.subscriptionsManager.OnEventRemoved[e]:
+				logrus.Infof("Unsubscribe Dynamic events [%s]!\n", e)
+				cp.Close()
+				return
+			}
+		}
+	}()
 }
 
-func (c BusKafka) UnSubscribe(e event.IntegrationEvent) {
-	//c.subscriptionsManager.DynamicUnSubscription(e)
-	//c.UnsubscribeDynamic(reflect.TypeOf(e).Name())
-	logrus.Infof("Unsubscribed to event {%s}", e)
+func UnSubscribe[T event.IntegrationEvent]() {
+	cqrs.RemoveSubscription[T]()
+}
+
+func UnSubscribeDynamic(e string) {
+	cqrs.RemoveDynamicSubscription(e)
+	logrus.Infof("Unsubscribed Dynamic to event {%s}", e)
 }
 
 func Publish(e ...event.IntegrationEvent) {
@@ -135,12 +128,12 @@ func Publish(e ...event.IntegrationEvent) {
 			}
 
 			c.asyncProducer.Input() <- &sarama.ProducerMessage{Topic: reflect.TypeOf(i).Name(), Value: sarama.ByteEncoder(bytes)}
-			logrus.Debugf("Publishing Event to Kafka: {%s}", uid)
 
 		loop:
 			for {
 				select {
 				case <-c.asyncProducer.Successes():
+					logrus.Debugf("Publishing Event to Kafka: {%s}", uid)
 					break loop
 				case err := <-c.asyncProducer.Errors():
 					if err != nil {
@@ -160,13 +153,48 @@ func Publish(e ...event.IntegrationEvent) {
 		}
 	}
 }
-func PublishToDelay[T event.IntegrationEvent](time time.Duration, e ...T) {
-	//TODO implement me
-	return
+
+func PublishToDelay(times time.Duration, e ...event.IntegrationEvent) {
+	for _, i := range e {
+		time.Sleep(times)
+		err := retry.Do(func() error {
+
+			bytes, uid, err := c.config.Marshaler.Marshal(i)
+			if err != nil {
+				logrus.Errorf("Failed to serialize the Event Model: {%s}", i.GetId())
+				return err
+			}
+
+			c.asyncProducer.Input() <- &sarama.ProducerMessage{Topic: reflect.TypeOf(i).Name(), Value: sarama.ByteEncoder(bytes)}
+
+		loop:
+			for {
+				select {
+				case <-c.asyncProducer.Successes():
+					logrus.Debugf("Publishing Event to Kafka: {%s}", uid)
+					break loop
+				case err := <-c.asyncProducer.Errors():
+					if err != nil {
+						logrus.Errorf("Publishing Event to Kafka Error! {%s}", err.Err)
+						return err
+					}
+				}
+			}
+
+			return nil
+
+		}, retry.Attempts(uint(c.config.Retry)))
+
+		if err != nil {
+			logrus.Errorln(err.Error())
+			return
+		}
+	}
 }
 
 func Disposable() error {
 	err := c.asyncProducer.Close()
 	c.connection.Close()
+	c.subscriptionsManager.Clear()
 	return err
 }

@@ -1,7 +1,7 @@
 package event
 
 import (
-	"github.com/aarchies/hephaestus/messagec/cqrs/message"
+	"github.com/aarchies/hephaestus/cqrs/message"
 )
 
 type IntegrationEvent interface {
