@@ -1,0 +1,39 @@
+syntax = "proto3";
+package test;
+option go_package = "./pb";
+
+message Weblog
+{
+  int64  timestamp = 1;
+  string user_id = 2;
+  string host_id = 3;
+  string node_id = 4;
+  string req_id = 5;
+  string remote_addr = 6;
+  string protocol = 7;
+  string method = 8;
+  string host = 9;
+  string uri = 10;
+  string referer = 11;
+  string user_agent = 12;
+  string client_os = 13;
+  string client_family = 14;
+  string crawler = 15;
+  int64  request_size = 16;
+  bool   crwaler_verified = 17;
+  int64  response_size = 18;
+  int64  response_time = 19;
+  int64  response_code = 20;
+  string response_status = 21;
+  string upstream_code = 22;
+  string content_type = 23;
+  string geo_continent = 24;
+  string geo_country = 25;
+  string geo_region = 26;
+  string geo_city = 27;
+  string geo_isp = 28;
+  float  geo_lat = 29;
+  float  geo_lon = 30;
+}
+
+

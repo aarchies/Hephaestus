@@ -28,21 +28,17 @@ func (c *IEventBusSubscriptionsManager) Clear() {
 	clear(c.handlers)
 }
 
-func (c *IEventBusSubscriptionsManager) AddDynamicSubscription(eventName string, handler event.IntegrationEventHandler) {
-	//c.rwMutex.Lock()
-	//defer c.rwMutex.Unlock()
+func AddDynamicSubscription[TH event.IDynamicIntegrationEventHandler](eventName string) {
 
-	if c.handlers[eventName] == nil {
-		s := &SubscriptionInfo{}
-		s.Dynamic(reflect.TypeOf(handler))
-
-		c.handlers[eventName] = s
+	if SubscriptionsManager.handlers[eventName] == nil {
+		SubscriptionsManager.handlers[eventName] = &SubscriptionInfo{
+			IsDynamic:   true,
+			HandlerType: reflect.TypeOf(new(TH)),
+		}
 	}
 }
 
-func AddSubscription[T event.IntegrationEvent, TH event.IntegrationEventHandler]() {
-	//SubscriptionsManager.rwMutex.Lock()
-	//defer SubscriptionsManager.rwMutex.Unlock()
+func AddSubscription[T event.IntegrationEvent, TH event.IntegrationEventHandler[T]]() {
 
 	eventName := reflect.TypeOf(new(T)).Elem().Name()
 

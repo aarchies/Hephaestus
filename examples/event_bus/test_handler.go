@@ -8,16 +8,21 @@ import (
 
 type TestHandler struct{}
 
-var _ event.IntegrationEventHandler = TestHandler{}
+var _ event.IntegrationEventHandler[TestModel] = TestHandler{}
 
-func (t TestHandler) Handle(uid string, metadata message.Metadata, data interface{}) error {
+func (t TestHandler) Handle(uid string, metadata message.Metadata, data TestModel) error {
 
-	// json
+	logrus.Infof("触发Handle方法! eventId:%s metaData:%v data:%v\n", uid, metadata, data)
 
-	// protobuf 指定pb模型
-	//proto.Unmarshal(data.Payload, &modelPb.Weblog{})
+	return nil
+}
 
-	logrus.Infof("触发Handle方法! eventId:%s metaData:%v data:%v\n", uid, metadata, data.(TestModel))
+type TestDynamicHandler struct{}
+
+var _ event.IDynamicIntegrationEventHandler = TestDynamicHandler{}
+
+func (t TestDynamicHandler) Handle(uid string, metadata message.Metadata, data interface{}) error {
+	logrus.Infof("触发Dynamic Handle方法! eventId:%s metaData:%v data:%v\n", uid, metadata, data)
 
 	return nil
 }

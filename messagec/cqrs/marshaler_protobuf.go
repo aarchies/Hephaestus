@@ -12,26 +12,36 @@ import (
 
 type ProtobufMarshaler struct{}
 
-func (m ProtobufMarshaler) Marshal(e event.IntegrationEvent) ([]byte, error) {
+func (m ProtobufMarshaler) Marshal(data interface{}) ([]byte, string, error) {
 
-	b, err := proto.Marshal(e.(proto.Message))
+	e := data.(event.IntegrationEvent)
+	b, err := proto.Marshal(data.(proto.Message))
 	if err != nil {
 		err := fmt.Sprintf("protobuf序列化消息时发生错误! Event:%s %s", err.Error(), reflect.TypeOf(e).Elem().Name())
-		return nil, errors.New(err)
+		return nil, "", errors.New(err)
 	}
-	e.Metadata().Set("name", reflect.TypeOf(e).Elem().Name())
-	bytes, err := json.Marshal(message.NewMessage(e.GetId(), e.Metadata(), b))
+
+	msg := message.NewMessage(e.GetId(), e.Metadata(), b)
+	bytes, err := json.Marshal(msg)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return bytes, nil
+	return bytes, msg.UUID, nil
 }
 
-func (ProtobufMarshaler) Unmarshal(e *message.Message, v interface{}) (err error) {
+func (ProtobufMarshaler) Unmarshal(e *message.Message, v reflect.Value) (err error) {
 
-	if err := json.Unmarshal(v.([]byte), &e); err != nil {
-		return errors.New(fmt.Sprintf("protobuf反序列化消息时发生错误! Event:%s", err.Error()))
+	// 初始化成员类型
+	v.Elem().Set(reflect.New(reflect.TypeOf(v.Elem().Interface()).Elem()))
+
+	// 初始化成员值
+	valueField := reflect.ValueOf(v.Elem().Interface()).Elem()
+	for i := 0; i < valueField.NumField(); i++ {
+		field := valueField.Field(i)
+		if field.Kind() == reflect.Ptr {
+			field.Set(reflect.New(field.Type().Elem()))
+		}
 	}
 
-	return nil
+	return proto.Unmarshal(e.Payload, v.Elem().Interface().(proto.Message))
 }

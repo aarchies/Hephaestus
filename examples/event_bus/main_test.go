@@ -1,6 +1,7 @@
 package event_bus
 
 import (
+	"github.com/aarchies/hephaestus/examples/event_bus/pb"
 	"github.com/aarchies/hephaestus/logs"
 	"github.com/aarchies/hephaestus/messagec/cqrs"
 	"github.com/aarchies/hephaestus/messagec/cqrs/contrib/kafkax"
@@ -23,14 +24,51 @@ func Test(t *testing.T) {
 		OnError: func(params cqrs.OnEventErrorParams) {
 			logrus.Errorln(params)
 		},
-		Marshaler: cqrs.JsonMarshaler{},
+		Marshaler: cqrs.ProtobufMarshaler{}, // 指定序列化器
 	})
 
 	kafkax.Subscribe[TestModel, TestHandler]()
+	kafkax.SubscribeDynamic[TestDynamicHandler]("TestModel")
 
 	go func() {
-		for i := 0; i < 100; i++ {
-			kafkax.Publish(TestModel{Data: "hello"})
+		for i := 0; i < 20; i++ {
+
+			// protobuf
+			message := TestModel{&pb.Weblog{
+				Timestamp:       1717053897865,
+				UserId:          "24",
+				HostId:          "10334",
+				NodeId:          "001",
+				ReqId:           "fasggswraz",
+				RemoteAddr:      "192.168.0.1",
+				Protocol:        "",
+				Method:          "",
+				Host:            "",
+				Uri:             "",
+				Referer:         "",
+				UserAgent:       "",
+				ClientOs:        "",
+				ClientFamily:    "",
+				Crawler:         "",
+				RequestSize:     0,
+				CrwalerVerified: false,
+				ResponseSize:    0,
+				ResponseTime:    0,
+				ResponseCode:    0,
+				ResponseStatus:  "",
+				UpstreamCode:    "",
+				ContentType:     "",
+				GeoContinent:    "",
+				GeoCountry:      "",
+				GeoRegion:       "",
+				GeoCity:         "",
+				GeoIsp:          "",
+				GeoLat:          125.12,
+				GeoLon:          122.12,
+			}}
+			// json
+			//message := TestModel{"你好!"}
+			kafkax.Publish(message)
 		}
 	}()
 

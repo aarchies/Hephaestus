@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/aarchies/hephaestus/messagec/cqrs/event"
 	"github.com/aarchies/hephaestus/messagec/cqrs/message"
+	"reflect"
 )
 
 type JsonMarshaler struct{}
@@ -25,6 +26,6 @@ func (m JsonMarshaler) Marshal(data interface{}) ([]byte, string, error) {
 	return bytes, msg.UUID, nil
 }
 
-func (JsonMarshaler) Unmarshal(e *message.Message, v interface{}) (err error) {
-	return json.Unmarshal(e.Payload, v)
+func (JsonMarshaler) Unmarshal(e *message.Message, v reflect.Value) (err error) {
+	return json.Unmarshal(e.Payload, v.Interface())
 }

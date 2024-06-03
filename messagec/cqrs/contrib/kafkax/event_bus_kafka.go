@@ -52,7 +52,7 @@ func NewEventBusWithConfig(connection IDefaultKafkaConnection, config cqrs.Event
 	return c
 }
 
-func Subscribe[T event.IntegrationEvent, TH event.IntegrationEventHandler]() {
+func Subscribe[T event.IntegrationEvent, TH event.IntegrationEventHandler[T]]() {
 
 	cqrs.AddSubscription[T, TH]()
 
@@ -83,61 +83,44 @@ func Subscribe[T event.IntegrationEvent, TH event.IntegrationEventHandler]() {
 	//	}
 	//}()
 }
+func SubscribeDynamic[TH event.IDynamicIntegrationEventHandler](e string) {
+	cqrs.AddDynamicSubscription[TH](e)
 
-func SubscribeDynamic[TH event.IntegrationEventHandler](e string) {
+	handlerName := reflect.TypeOf(new(TH)).Elem().Name()
+	cp, err := sarama.NewConsumerGroupFromClient(fmt.Sprintf("event_%s", e), c.connection.GetClient())
+	if err != nil {
+		return
+	}
 
-	//c.subscriptionsManager.AddDynamicSubscription(e)
-	//cp, err := sarama.NewConsumerGroupFromClient(fmt.Sprintf("event_%s", e), c.connection.GetClient())
-	//if err != nil {
-	//	return
-	//}
-	//
-	//logrus.Infof("Subscribing to event {%s} with {%s}", e, reflect.TypeOf(new(TH)).Elem().Name())
-	//go func() {
-	//	if err := cp.Consume(context.Background(), []string{e}, consumer.DynamicIntegrationConsumerHandler(h, c.config)); err != nil {
-	//		return
-	//	}
-	//}()
-	//
+	logrus.Infof("Subscribing to event {%s} with {%s}", e, handlerName)
+	go func() {
+		if err := cp.Consume(context.Background(), []string{e}, consumer.NewDynamicIntegrationConsumerHandler(c.subscriptionsManager, c.config)); err != nil {
+			return
+		}
+	}()
+
 	//go func() {
 	//	defer cp.Close()
 	//loop:
 	//	for {
 	//		select {
-	//		case <-c.subscriptionsManager.GetHandle(e).UnSubscription:
-	//			logrus.Infof("Unsubscribe events [%s]!\n", e)
-	//			c.subscriptionsManager.RemoveDynamicSubscription(e)
+	//		case <-c.subscriptionsManager.OnEventRemoved[eventName]:
+	//			logrus.Infof("Unsubscribe events [%s]!\n", eventName)
+	//			c.subscriptionsManager.RemoveDynamicSubscription(eventName)
 	//			break loop
 	//		}
 	//	}
 	//}()
 }
-
-func (c BusKafka) SubscribeToDelay(e event.IntegrationEvent, h event.IntegrationEventHandler) {
+func SubscribeToDelay[T event.IntegrationEvent, TH event.IntegrationEventHandler[T]]() {
 	//TODO implement me
 	panic("implement me")
 }
 
 func (c BusKafka) UnSubscribe(e event.IntegrationEvent) {
-	c.UnsubscribeDynamic(reflect.TypeOf(e).Name())
-}
-
-func (c BusKafka) UnsubscribeDynamic(e string) {
 	//c.subscriptionsManager.DynamicUnSubscription(e)
+	//c.UnsubscribeDynamic(reflect.TypeOf(e).Name())
 	logrus.Infof("Unsubscribed to event {%s}", e)
-	//controller, err := c.connection.GetClient().Controller()
-	//if err != nil {
-	//	return
-	//}
-	//controller.DeleteGroups()
-	//groups, err := controller.DescribeGroups(&sarama.DescribeGroupsRequest{
-	//	Version:                     0,
-	//	Groups:                      nil,
-	//	IncludeAuthorizedOperations: false,
-	//})
-	//if err != nil {
-	//	return
-	//}
 }
 
 func Publish(e ...event.IntegrationEvent) {
@@ -177,14 +160,12 @@ func Publish(e ...event.IntegrationEvent) {
 		}
 	}
 }
-
-func (c BusKafka) PublishToDelay(time time.Duration, e ...event.IntegrationEvent) {
+func PublishToDelay[T event.IntegrationEvent](time time.Duration, e ...T) {
 	//TODO implement me
 	return
 }
 
-func (c BusKafka) Disposable() error {
-
+func Disposable() error {
 	err := c.asyncProducer.Close()
 	c.connection.Close()
 	return err

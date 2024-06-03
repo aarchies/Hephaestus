@@ -10,24 +10,24 @@ import (
 	"reflect"
 )
 
-type IntegrationConsumerGroupHandler struct {
+type DynamicIntegrationConsumerGroupHandler struct {
 	subscriptionsManager *cqrs.IEventBusSubscriptionsManager
 	config               cqrs.EventBusConfig
 }
 
-func NewIntegrationConsumerHandler(subscriptionsManager *cqrs.IEventBusSubscriptionsManager, config cqrs.EventBusConfig) *IntegrationConsumerGroupHandler {
-	return &IntegrationConsumerGroupHandler{subscriptionsManager, config}
+func NewDynamicIntegrationConsumerHandler(subscriptionsManager *cqrs.IEventBusSubscriptionsManager, config cqrs.EventBusConfig) *DynamicIntegrationConsumerGroupHandler {
+	return &DynamicIntegrationConsumerGroupHandler{subscriptionsManager, config}
 }
 
-func (d IntegrationConsumerGroupHandler) Setup(session sarama.ConsumerGroupSession) error {
+func (d DynamicIntegrationConsumerGroupHandler) Setup(session sarama.ConsumerGroupSession) error {
 	return nil
 }
 
-func (d IntegrationConsumerGroupHandler) Cleanup(session sarama.ConsumerGroupSession) error {
+func (d DynamicIntegrationConsumerGroupHandler) Cleanup(session sarama.ConsumerGroupSession) error {
 	return nil
 }
 
-func (d IntegrationConsumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+func (d DynamicIntegrationConsumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for m := range claim.Messages() {
 
 		var msg message.Message

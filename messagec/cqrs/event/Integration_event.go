@@ -7,5 +7,4 @@ import (
 type IntegrationEvent interface {
 	GetId() string
 	Metadata() message.Metadata
-	//GetPayload() interface{}
 }
