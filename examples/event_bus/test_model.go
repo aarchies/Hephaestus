@@ -1,8 +1,8 @@
 package event_bus
 
 import (
+	"github.com/aarchies/hephaestus/cqrs/message"
 	"github.com/aarchies/hephaestus/examples/event_bus/pb"
-	"github.com/aarchies/hephaestus/messagec/cqrs/message"
 	"github.com/google/uuid"
 )
 
