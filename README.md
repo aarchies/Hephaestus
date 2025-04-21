@@ -9,7 +9,7 @@ Hephaestus is a Go library that provides a variety of util functions and message
 
 
 
-## <a href="https://www.golancet.cn/en/" target="_blank"> Website</a> | [简体中文](./README_zh-CN.md)
+## <a href="https://github.com/aarchies/Hephaestus" target="_blank"> Website</a> | [简体中文](./README_zh-CN.md)
 
 ## Features
 
