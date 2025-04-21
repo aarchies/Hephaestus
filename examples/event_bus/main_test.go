@@ -1,18 +1,19 @@
 package event_bus
 
 import (
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/aarchies/hephaestus/cqrs"
 	"github.com/aarchies/hephaestus/cqrs/contrib/kafkax"
 	"github.com/aarchies/hephaestus/examples/event_bus/pb"
 	"github.com/aarchies/hephaestus/logs"
 	"github.com/sirupsen/logrus"
-	"sync"
-	"testing"
-	"time"
 )
 
 func Test(t *testing.T) {
-	logs.SetLogsModule(logrus.DebugLevel)
+	logs.LogMode("info", false)
 
 	var wg sync.WaitGroup
 
