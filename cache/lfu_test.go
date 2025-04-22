@@ -53,6 +53,26 @@ func TestLFU(t *testing.T) {
 		if got != expected {
 			t.Errorf("expected: %v, got: %v", expected, got)
 		}
+	})
 
+	t.Run("test 4: Put key over capacity but recent key exists", func(t *testing.T) {
+		lfuCache.Put("3", 3)
+		lfuCache.Put("2", 2)
+		lfuCache.Put("1", 1)
+
+		got := lfuCache.Get("1")
+		if got != nil {
+			t.Errorf("expected: nil, got: %v", got)
+		}
+
+		lfuCache.Put("4", 4)
+		lfuCache.Put("5", 5)
+
+		expected := 5
+		got = lfuCache.Get("5")
+
+		if got != expected {
+			t.Errorf("expected: %v, got: %v", expected, got)
+		}
 	})
 }

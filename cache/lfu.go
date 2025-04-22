@@ -1,13 +1,3 @@
-// lfu.go
-// description: a type of cache algorithm used to manage memory within a computer.
-// details:
-// The standard characteristics of this method involve the system keeping track of the number of times a block is referenced in memory.
-// When the cache is full and requires more room the system will purge the item with the lowest reference frequency.
-// ref: (https://en.wikipedia.org/wiki/Least_frequently_used)
-// time complexity: O(N)
-// space complexity: O(1)
-// author: [CocaineCong](https://github.com/CocaineCong)
-
 package cache
 
 import (
@@ -40,23 +30,13 @@ func NewLFU(capacity int) LFU {
 	}
 }
 
-// initItem to init item for LFU
-func initItem(k string, v any, f int) item {
-	return item{
-		key:   k,
-		value: v,
-		freq:  f,
-	}
-}
-
 // Get the key in cache by LFU
 func (c *LFU) Get(key string) any {
 	// if existed, will return value
 	if e, ok := c.itemMap[key]; ok {
 		// the frequency of e +1 and change freqMap
 		c.increaseFreq(e)
-		obj := e.Value.(item)
-		return obj.value
+		return e.Value.(item).value
 	}
 
 	// if not existed, return nil
@@ -71,8 +51,6 @@ func (c *LFU) Put(key string, value any) {
 		obj.value = value
 		c.increaseFreq(e)
 	} else {
-		// if key not existed
-		obj := initItem(key, value, 1)
 		// if the length of item gets to the top line
 		// remove the least frequently operated element
 		if c.len == c.cap {
@@ -80,7 +58,11 @@ func (c *LFU) Put(key string, value any) {
 			c.len--
 		}
 		// insert in freqMap and itemMap
-		c.insertMap(obj)
+		c.insertMap(item{
+			key:   key,
+			value: value,
+			freq:  1,
+		})
 		// change minFreq to 1 because insert the newest one
 		c.minFreq = 1
 		// length++
