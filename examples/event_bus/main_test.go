@@ -8,12 +8,10 @@ import (
 	"github.com/aarchies/hephaestus/cqrs"
 	"github.com/aarchies/hephaestus/cqrs/contrib/kafkax"
 	"github.com/aarchies/hephaestus/examples/event_bus/pb"
-	"github.com/aarchies/hephaestus/logs"
 	"github.com/sirupsen/logrus"
 )
 
 func Test(t *testing.T) {
-	logs.LogMode("info", false)
 
 	var wg sync.WaitGroup
 
