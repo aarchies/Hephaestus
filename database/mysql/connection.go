@@ -40,9 +40,10 @@ func NewOption(hosts []string, port int, username, password, database string) *O
 
 func (m *Option) Connect() *gorm.DB {
 	_logger := logger.New(logger.Writer(log.New(os.Stdout, "\r\n", log.LstdFlags)), logger.Config{
-		SlowThreshold: 200 * time.Millisecond,
-		LogLevel:      logger.Info,
-		Colorful:      true,
+		SlowThreshold:             200 * time.Millisecond,
+		LogLevel:                  logger.Info,
+		IgnoreRecordNotFoundError: true, // Ignore ErrRecordNotFound error for logger
+		Colorful:                  true,
 	})
 
 	option := &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true,
