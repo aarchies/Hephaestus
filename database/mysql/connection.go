@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -59,11 +60,40 @@ func (m *Option) Connect() *gorm.DB {
 		option.Logger = _logger.LogMode(logger.Info)
 	}
 
+	// try to connect to mysql server (without database)
+	hosts := strings.Join(m.Hosts, ",")
+	rootDsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/?%s",
+		m.Username,
+		m.Password,
+		hosts,
+		m.Port,
+		m.Config,
+	)
+
+	rootDB, err := gorm.Open(mysql.Open(rootDsn), option)
+	if err != nil {
+		log.Printf("connect to mysql server error: %v\n", err)
+		return nil
+	}
+
+	// check if database exists, if not, create it
+	sql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4;", m.DataBase)
+	if err := rootDB.Exec(sql).Error; err != nil {
+		log.Printf("create database error: %v\n", err)
+		return nil
+	}
+
+	// close root connection
+	sqlDB, _ := rootDB.DB()
+	sqlDB.Close()
+
+	// connect to the specified database
 	if db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN:                       m.Dsn(), // DSN data source name
 		DefaultStringSize:         191,     // string 类型字段的默认长度
 		SkipInitializeWithVersion: false,   // 根据版本自动配置
 	}), option); err != nil {
+		log.Printf("connect to database %s error: %v\n", m.DataBase, err)
 		return nil
 	} else {
 		sqlDB, _ := db.DB()

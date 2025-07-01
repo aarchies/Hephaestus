@@ -2,10 +2,12 @@ package pubsub
 
 import (
 	"errors"
-	"netleap/pkg/signal/done"
-	"netleap/pkg/task"
+
 	"sync"
 	"time"
+
+	"github.com/aarchies/hephaestus/signal/done"
+	"github.com/aarchies/hephaestus/task"
 )
 
 type Subscriber struct {

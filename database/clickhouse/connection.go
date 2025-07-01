@@ -68,6 +68,44 @@ func (m *Option) WithMaxCompressionBuffer(c int) *Option {
 }
 
 func (m *Option) Connect() *ConnectionFactory {
+	// try to connect to clickhouse server (without database)
+	rootOption := &clickhouse.Options{
+		Addr: m.Hosts,
+		Auth: clickhouse.Auth{
+			Database: "", // 不指定数据库
+			Username: m.Username,
+			Password: m.Password,
+		},
+		Compression: &clickhouse.Compression{
+			Method: clickhouse.CompressionLZ4,
+		},
+		ConnOpenStrategy:     clickhouse.ConnOpenRoundRobin,
+		MaxOpenConns:         m.MaxOpenConn,
+		MaxIdleConns:         m.MaxIdleConn,
+		DialTimeout:          time.Second * 30,
+		Debug:                m.IsDebug,
+		BlockBufferSize:      uint8(m.BlockBufferSize),
+		MaxCompressionBuffer: m.MaxCompressionBuffer,
+	}
+
+	rootConn, err := clickhouse.Open(rootOption)
+	if err != nil {
+		logrus.Fatalf("connect to clickhouse server error: %s", err.Error())
+	}
+	if err := rootConn.Ping(context.Background()); err != nil {
+		logrus.Fatalf("ping clickhouse server error: %s", err.Error())
+	}
+
+	// check if database exists, if not, create it
+	sql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`", m.DataBase)
+	if err := rootConn.Exec(context.Background(), sql); err != nil {
+		logrus.Fatalf("create database error: %s", err.Error())
+	}
+
+	// close root connection
+	rootConn.Close()
+
+	// connect to the specified database with full options
 	option := &clickhouse.Options{
 		Addr: m.Hosts,
 		Auth: clickhouse.Auth{
@@ -88,10 +126,10 @@ func (m *Option) Connect() *ConnectionFactory {
 	}
 	conn, err := clickhouse.Open(option)
 	if err != nil {
-		logrus.Fatalf("connecting clickhouse error! %s", err.Error())
+		logrus.Fatalf("connect to clickhouse error: %s", err.Error())
 	}
 	if err := conn.Ping(context.Background()); err != nil {
-		logrus.Fatalln(err.Error())
+		logrus.Fatalf("ping clickhouse error: %s", err.Error())
 	}
 
 	// gorm
@@ -121,30 +159,16 @@ func (m *Option) Connect() *ConnectionFactory {
 	default:
 		_gormConfig.Logger = _logger.LogMode(logger.Silent)
 	}
+
 	gormDb, err := gorm.Open(ck.New(ck.Config{
-		Conn: clickhouse.OpenDB(&clickhouse.Options{
-			Addr: m.Hosts,
-			Auth: clickhouse.Auth{
-				Database: m.DataBase,
-				Username: m.Username,
-				Password: m.Password,
-			},
-			Compression: &clickhouse.Compression{
-				Method: clickhouse.CompressionLZ4,
-			},
-			ConnOpenStrategy:     clickhouse.ConnOpenRoundRobin,
-			DialTimeout:          time.Second * 30,
-			Debug:                m.IsDebug,
-			BlockBufferSize:      uint8(m.BlockBufferSize),
-			MaxCompressionBuffer: m.MaxCompressionBuffer,
-		}),
+		Conn: clickhouse.OpenDB(option),
 	}), _gormConfig)
 
 	if err != nil {
-		logrus.Fatalln(err.Error())
+		logrus.Fatalf("connect to clickhouse with gorm error: %s", err.Error())
 	}
 
-	logrus.Infof("clientHouse cluster connected successful! host:%s dataBase:[%s]\n", m.Hosts, m.DataBase)
+	logrus.Infof("clickhouse cluster connected successful! host:%s database:[%s]", m.Hosts, m.DataBase)
 
 	return &ConnectionFactory{
 		conn:     conn,

@@ -2,10 +2,11 @@ package signal
 
 import (
 	"context"
-	"netleap/pkg/task"
 
 	"sync"
 	"time"
+
+	"github.com/aarchies/hephaestus/task"
 )
 
 type ActivityUpdater interface {

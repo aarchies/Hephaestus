@@ -2,7 +2,8 @@ package task
 
 import (
 	"context"
-	"netleap/pkg/signal/semaphore"
+
+	"github.com/aarchies/hephaestus/signal/semaphore"
 )
 
 // OnSuccess executes g() after f() returns nil.
