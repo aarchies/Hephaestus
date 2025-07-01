@@ -78,7 +78,7 @@ func (m *Option) Connect() *gorm.DB {
 	}
 
 	// check if database exists, if not, create it
-	sql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4;", m.DataBase)
+	sql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` DEFAULT CHARACTER SET utf8mb4;", m.DataBase)
 	if err := rootDB.Exec(sql).Error; err != nil {
 		log.Printf("create database error: %v\n", err)
 		return nil
